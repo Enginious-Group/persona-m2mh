@@ -97,8 +97,8 @@ FReply SMyCompoundWidget::OnPersonaButtonClicked()
     FString ipString = ipTextBox->GetText().ToString();
     FString nameString = nameTextBox->GetText().ToString();
 
-    FString commandPath = FString(TEXT("py ")) + PluginDir + FString(TEXT("/Source/python/main.py -content ")) + FullPluginPath + FString(TEXT(" -ip ")) + ipString + FString(TEXT(" -path ")) + pathString + FString(TEXT(" -name ")) + nameString;
-
+    FString commandPath = (FString(TEXT("py ")) + PluginDir + FString(TEXT("/Source/python/main.py -content \"")) + FullPluginPath + FString(TEXT("\" -ip ")) + ipString + FString(TEXT(" -path \"")) + pathString + FString(TEXT("\" -name \"")) + nameString + FString(TEXT("\"")));
+   
     const TCHAR* commandTchar = *commandPath;
     GEngine->Exec(NULL, commandTchar);
     return FReply::Handled();
