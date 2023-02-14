@@ -24,7 +24,7 @@ void SMyCompoundWidget::Construct(const FArguments& InArgs)
         .VAlign(VAlign_Top)
         [
             SAssignNew(ipTextBox, SEditableTextBox)
-            .Text(FText::FromString("10.128.0.101"))
+            .Text(FText::FromString("52.91.135.204"))
         ]
         ]
     + SVerticalBox::Slot()
@@ -41,7 +41,7 @@ void SMyCompoundWidget::Construct(const FArguments& InArgs)
         .VAlign(VAlign_Top)
         [
             SAssignNew(nameTextBox, SEditableTextBox)
-            .Text(FText::FromString("Ada"))
+            .Text(FText::FromString("Persona"))
 
         ]
         ]

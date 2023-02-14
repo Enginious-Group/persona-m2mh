@@ -66,7 +66,6 @@ def persona(input_filepath:Path, output_dirpath:Path):
     logging.info(f"Processing file: {input_filepath} ...")
     
     try:
-        # main_api_call = call_api(input_filepath, "png")
         main_api_call = call_api(input_filepath, "zip")
         main_api_results = unzip_file(main_api_call)
         logging.info("Done!")

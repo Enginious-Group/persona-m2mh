@@ -28,7 +28,6 @@ def import_mesh():
     unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([import_task])
 
 def not_unreal_actions():    
-    #os.system(r'start /wait cmd /c py D:\\03_12\\Persona51\\Plugins\\Persona3d\\Source\\python\\client.py -ip "127.0.0.1" "D:\03_12\Persona51\Plugins\Persona3d\Assets"')
     clientpath = pathlib.Path(args.content + '/Source/python/client.py')
     os.system(f"start /wait cmd /c py {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
     print(f"start /wait cmd /c {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
