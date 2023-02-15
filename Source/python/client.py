@@ -7,10 +7,7 @@ import logging
 import os
 import requests
 from pathlib import Path
-from PIL import Image
-from tqdm import tqdm
 from zipfile import ZipFile
-import shutil
 
 EPHEM_URL = "localhost"
 
@@ -100,16 +97,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler("debug.log"),
-            logging.StreamHandler()
-        ]
-    )
-
     if(args.ip):
         EPHEM_URL = args.ip
     

@@ -7,7 +7,9 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
+#include "Components/SceneComponent.h"
 
+//#include "GroomComponent.h"
 // Sets default values for this component's properties
 UPersonaComponent::UPersonaComponent()
 {
@@ -107,10 +109,28 @@ void UPersonaComponent::SaveMaterialInstance()
 
 void UPersonaComponent::ApplySkinColor()
 {
+
 }
 
 void UPersonaComponent::ApplyHairColor()
 {
+	USceneComponent* ParentComponent = Cast<USceneComponent>(this)->GetAttachParent();
+	FString HairName = "Hair";
+
+	TArray<USceneComponent*> SceneComponents = ParentComponent->GetAttachChildren();
+	for (USceneComponent* Component : SceneComponents)
+	{
+		if (Component->GetName() == HairName)
+		{
+
+			//UGroomComponent* GroomComponent = Cast<UGroomComponent>(Component);
+			//Cast<UGroomComponent>(Component)
+		};
+	};
+	
+
+		
+
 }
 
 void UPersonaComponent::ApplySkinTexture()

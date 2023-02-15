@@ -29,8 +29,7 @@ def import_mesh():
 
 def not_unreal_actions():    
     clientpath = pathlib.Path(args.content + '/Source/python/client.py')
-    os.system(f"start /wait cmd /c py {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
-    print(f"start /wait cmd /c {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
+    os.system(f"start /wait cmd /c {pythonPath} {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
     
 
 def create_person_folder():
@@ -75,6 +74,7 @@ if __name__ == '__main__':
     folderPath = pathlib.Path(args.content + '/Assets/' + name)
     pathwithobj = pathlib.Path(str(folderPath) +'/' + name + '.obj')
     tpathwithpng = pathlib.Path(str(folderPath) +'/t_' + name + '.png')
+    pythonPath = pathlib.Path(args.content + '/Source/python/persona_env/Scripts/python.exe')
     
     
     print(args.content)
