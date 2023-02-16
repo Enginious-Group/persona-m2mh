@@ -42,9 +42,10 @@ def import_mesh():
 
 def not_unreal_actions():    
     clientpath = pathlib.Path(args.content + '/Source/python/client.py')
-    os.system(f"start /wait cmd /c \"{pythonExePath}\" {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
-    print(f"start /wait cmd /c \"{pythonExePath}\" {clientpath} -assets {folderPath} -ip {args.ip} -path {os.path.join(folderPath, namewithpng)} -name {name}")
-
+    #subprocess.check_call([f"\"{pythonExePath}\"",f"\"{clientpath}\"","-assets", f"\"{folderPath}\"","-ip",f"{args.ip}","-path",f"\"{os.path.join(folderPath, namewithpng)}\"","-name",f"\"{name}\""])
+    os.system(f"start /wait cmd /c \"\"{pythonExePath}\" \"{clientpath}\" -assets \"{folderPath}\" -ip \"{args.ip}\" -path \"{os.path.join(folderPath, namewithpng)}\" -name \"{name}\"\"")
+    #print(f"start /wait cmd /c \"{pythonExePath}\" \"{clientpath}\" -assets \"{folderPath}\" -ip \"{args.ip}\" -path \"{os.path.join(folderPath, namewithpng)}\" -name \"{name}\"")
+    #"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" "D:\ue\personaproj\Plugins\Persona3d\Source\python\client.py" -assets "D:\ue\personaproj\Plugins\Persona3d\Assets\Persona_1602153556" -ip "52.91.135.204" -path "D:\ue\personaproj\Plugins\Persona3d\Assets\Persona_1602153556\Persona_1602153556.png" -name "Persona_1602153556"
 def create_person_folder():
     if not os.path.exists(folderPath):
         os.makedirs(folderPath)
@@ -89,12 +90,13 @@ if __name__ == '__main__':
     tpathwithpng = pathlib.Path(str(folderPath) +'/t_' + name + '.png')
     editorPath = sys.executable
     pythonExePath = pathlib.Path(editorPath[:-23]  + '/ThirdParty/Python3/Win64/python.exe')
+    # pythonExePath = "\"" + str(pythonExePath) + "\""
 
     
-    print(args.content)
-    print(args.ip)
-    print(args.path)
-    print(name)
+    # print(args.content)
+    # print(args.ip)
+    # print(args.path)
+    # print(name)
     requests_preparation()
     create_person_folder()
     not_unreal_actions()

@@ -89,6 +89,6 @@ if __name__ == '__main__':
     
     if(args.ip):
         EPHEM_URL = args.ip
-    
+
     output_dirpath = Path(args.assets)
     persona(args.path, args.assets)
