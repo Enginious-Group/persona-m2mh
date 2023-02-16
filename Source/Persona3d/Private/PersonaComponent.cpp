@@ -16,7 +16,7 @@ UPersonaComponent::UPersonaComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	UPersonaComponent::UpdateList();
+	//UPersonaComponent::UpdateList();
 
 	// ...
 }
@@ -90,11 +90,12 @@ void UPersonaComponent::UpdateList()
 
 void UPersonaComponent::ApplyPreset()
 {
-	if (hairColor)
+	UE_LOG(LogTemp, Display, TEXT("Preset applied"));
+	if (bHairColor)
 		ApplyHairColor();
-	if (skinColor)
+	if (bSkinColor)
 		ApplySkinColor();
-	if (skinTexture)
+	if (bSkinTexture)
 		ApplySkinTexture();
 }
 
@@ -109,7 +110,7 @@ void UPersonaComponent::SaveMaterialInstance()
 
 void UPersonaComponent::ApplySkinColor()
 {
-
+	UE_LOG(LogTemp, Display, TEXT("Skin applied"));
 }
 
 void UPersonaComponent::ApplyHairColor()
@@ -127,7 +128,7 @@ void UPersonaComponent::ApplyHairColor()
 			//Cast<UGroomComponent>(Component)
 		};
 	};
-	
+	UE_LOG(LogTemp, Display, TEXT("Hair applied"));
 
 		
 
@@ -135,4 +136,7 @@ void UPersonaComponent::ApplyHairColor()
 
 void UPersonaComponent::ApplySkinTexture()
 {
+	UE_LOG(LogTemp, Display, TEXT("Texture applied"));
 }
+
+

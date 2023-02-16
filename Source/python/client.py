@@ -1,18 +1,12 @@
-#sample usage
-#python client.py -ip "127.0.0.1" -c "D:\Persona\UE\Persona\Plugins\personaml\Content"     
-
-# for api processing
 import argparse
 import logging
 import os
-import requests
 from pathlib import Path
 from zipfile import ZipFile
+import requests
+
 
 EPHEM_URL = "localhost"
-
-
-
 
 output_dirpath = Path('D:\Persona')
 ###
@@ -32,14 +26,10 @@ def call_api(input_filepath:Path, output_extension:str):
     if r.status_code == 200:
         logging.info(f"Persona returned results!")
 
-        # Create folder for output
-        
-        # Save output to file
         output_filepath = output_dirpath / 'response.zip'
         with open(output_filepath, 'wb') as output:
             output.write(r.content)
 
-        # Return
         return output_filepath
 
     else:
@@ -52,7 +42,6 @@ def unzip_file(zip_filepath:Path):
         zip_ref.extractall(output_dirpath)
 
 
-    # Remove the unused folder
     os.remove(zip_filepath)
 
     logging.info(f"result was unzipped!")
@@ -77,6 +66,7 @@ def persona(input_filepath:Path, output_dirpath:Path):
 
 if __name__ == '__main__':
 
+
     parser = argparse.ArgumentParser(description = 'Persona ML api client') # TODO store record.txt
     parser.add_argument(
         '-assets',
@@ -100,6 +90,5 @@ if __name__ == '__main__':
     if(args.ip):
         EPHEM_URL = args.ip
     
-    # # Process the files
     output_dirpath = Path(args.assets)
     persona(args.path, args.assets)

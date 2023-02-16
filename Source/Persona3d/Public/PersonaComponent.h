@@ -24,17 +24,23 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		PersonaPreset currentPreset;
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Persona")
-		bool skinTexture;
+		bool bSkinTexture;
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Persona")
-		bool hairColor;
+		bool bHairColor;
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Persona")
-		bool skinColor;
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
+		bool bSkinColor;
+	UPROPERTY(EditAnywhere, Category = "Persona")
+		bool bUpdateList;
+	UPROPERTY(EditAnywhere, Category = "Persona")
+		bool bApplyPreset;
+	UFUNCTION(CallInEditor, Category = "Persona")
 		void UpdateList();
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
+	UFUNCTION(CallInEditor, Category = "Persona")
 		void ApplyPreset();
 
 
+
+	//BlueprintCallable,
 private:
 	TArray<FString> presetPaths;
 	TArray<FString> presetNames;
@@ -42,6 +48,27 @@ private:
 	void ApplySkinColor();
 	void ApplyHairColor();
 	void ApplySkinTexture();
+	
+	
+	
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
+	{
+
+		if (bUpdateList)
+		{
+			bUpdateList = false;
+			UpdateList();
+
+		}
+		if (bApplyPreset)
+		{
+			bApplyPreset = false;
+			ApplyPreset();
+		}
+
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
+
 
 protected:
 	// Called when the game starts
