@@ -71,7 +71,9 @@ private:
 	void ApplySkinColor();
 	void ApplyHairColor();
 	void ApplySkinTexture();
-	
+	void ReadJson();
+
+
 
 protected:
 	// Called when the game starts

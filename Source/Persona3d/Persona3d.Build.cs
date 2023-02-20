@@ -26,7 +26,10 @@ public class Persona3d : ModuleRules
 			new string[]
 			{
 				"Core",
-				//"GroomComponent"
+				"CoreUObject",
+				"Engine",
+				"Json",
+				"JsonUtilities",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,6 +47,8 @@ public class Persona3d : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "Json",
+                "JsonUtilities",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

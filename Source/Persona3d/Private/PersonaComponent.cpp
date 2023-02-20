@@ -12,6 +12,8 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Net/UnrealNetwork.h"
+#include "PersonaUtilities.h"
+#include "Dom/JsonObject.h"
 
 //#include "GroomComponent.h"
 // Sets default values for this component's properties
@@ -98,6 +100,7 @@ void UPersonaComponent::UpdateList()
 
 void UPersonaComponent::ApplyPreset()
 {
+	ReadJson();
 	if (!bBeingSet) 
 	{
 		bBeingSet = true;
@@ -119,37 +122,36 @@ void UPersonaComponent::ApplySkinColor()
 
 void UPersonaComponent::ApplyHairColor()
 {
-	USceneComponent* ParentComponent = Cast<USceneComponent>(this)->GetAttachParent();
+	/*
 	FString HairName = "Hair";
+	AActor* stary = Cast<USceneComponent>this->GetOwner();
+	TArray<UActorComponent*> ChildrenComponents;
+	if (stary != nullptr) {
+		
+		stary->GetComponents(ChildrenComponents);
+	}
 
-	TArray<USceneComponent*> SceneComponents = ParentComponent->GetAttachChildren();
-	for (USceneComponent* Component : SceneComponents)
+	UE_LOG(LogTemp, Display, TEXT("Actors length: %d"), ChildrenComponents.Num());
+
+	for (AActor* Component : ChildrenComponents)
 	{
+
+		UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
 		if (Component->GetName() == HairName)
 		{
-			//UGroomComponent* GroomComponent = Cast<UGroomComponent>(Component);
-			//Cast<UGroomComponent>(Component)
-
-			UMeshComponent* groomComponent = Cast<UMeshComponent>(Component);
-			//UMaterialInterface* currentMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/MyMaterials/MyMaterial"));
-			UMaterialInterface* currentGroomMaterial = groomComponent->GetMaterial(0);
-
-			UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentGroomMaterial, nullptr);
-
+			UE_LOG(LogTemp, Display, TEXT("Hair found"));
+			UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
+			UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
+			UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
 			UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyMaterials/MyNewMaterialInstance"));
-
 			DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
-
-			// Save the new material instance to disk
 			FAssetRegistryModule::AssetCreated(NewMaterialInstance);
 			NewMaterialInstance->MarkPackageDirty();
+			hairComponent->SetMaterial(0, NewMaterialInstance);
 
-			groomComponent->SetMaterial(0, NewMaterialInstance);
 		};
-	};
+	}*/
 	UE_LOG(LogTemp, Display, TEXT("Hair applied"));
-
-		
 
 }
 
@@ -157,5 +159,23 @@ void UPersonaComponent::ApplySkinTexture()
 {
 	UE_LOG(LogTemp, Display, TEXT("Texture applied"));
 }
+
+
+//// JSON
+void UPersonaComponent::ReadJson() 
+{
+	FString name = "/haircolor.json";
+	FString skinColorName = "/color_correction.json";
+	for (const FString& path : presetPaths)
+	{
+		FString fullPath = path + name;
+		FString fieldValue;
+		TSharedPtr<FJsonObject> jsonObject = UPersonaUtilities::ReadJson(fullPath);
+		jsonObject->TryGetStringField("hair_color", fieldValue);
+		UE_LOG(LogTemp, Display, TEXT("Skin color: %s"), *fieldValue);
+		//FColor::FromHex(HexString)
+	}
+}
+
 
 
