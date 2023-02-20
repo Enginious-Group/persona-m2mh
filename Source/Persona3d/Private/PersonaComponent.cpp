@@ -8,6 +8,9 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "Components/SceneComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 //#include "GroomComponent.h"
 // Sets default values for this component's properties
@@ -43,60 +46,71 @@ void UPersonaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UPersonaComponent::UpdateList()
 {
-	FString PluginDir = IPluginManager::Get().FindPlugin("Persona3d")->GetBaseDir();
-	FString FullPluginPath = FPaths::ConvertRelativePathToFull(PluginDir) + FString(TEXT("/Assets/"));
-
-	UE_LOG(LogTemp, Display, TEXT("Plugin Path: %s"), *FullPluginPath);
-
-	IFileManager& FileManager = IFileManager::Get();
-	TArray<FString> DirectoriesToVisit;
-	TArray<FString> DirectoriesNames;
-
-	//DirectoriesToVisit.Add(FullPluginPath);
-
-	const FString& CurrentDirectory = FullPluginPath;
-	TArray<FString> Subdirectories;
-
-	// Get all subdirectories of the current directory
-	FileManager.FindFiles(Subdirectories, *(CurrentDirectory + "*"), false, true);
-
-	for (const FString& Subdirectory : Subdirectories)
+	if (!bBeingUpdated) 
 	{
-		UE_LOG(LogTemp, Display, TEXT("Found directory: %s"), *Subdirectory);
-		// Add the subdirectory to the list of directories to visit
-		DirectoriesToVisit.Add(FPaths::Combine(CurrentDirectory, Subdirectory));
-		DirectoriesNames.Add(Subdirectory);
+		bBeingUpdated = true;
+		FString PluginDir = IPluginManager::Get().FindPlugin("Persona3d")->GetBaseDir();
+		FString FullPluginPath = FPaths::ConvertRelativePathToFull(PluginDir) + FString(TEXT("/Assets/"));
+
+		UE_LOG(LogTemp, Display, TEXT("Plugin Path: %s"), *FullPluginPath);
+
+		IFileManager& FileManager = IFileManager::Get();
+		TArray<FString> DirectoriesToVisit;
+		TArray<FString> DirectoriesNames;
+
+		//DirectoriesToVisit.Add(FullPluginPath);
+
+		const FString& CurrentDirectory = FullPluginPath;
+		TArray<FString> Subdirectories;
+
+		// Get all subdirectories of the current directory
+		FileManager.FindFiles(Subdirectories, *(CurrentDirectory + "*"), false, true);
+
+		for (const FString& Subdirectory : Subdirectories)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Found directory: %s"), *Subdirectory);
+			// Add the subdirectory to the list of directories to visit
+			DirectoriesToVisit.Add(FPaths::Combine(CurrentDirectory, Subdirectory));
+			DirectoriesNames.Add(Subdirectory);
+		}
+
+		TArray<TPair<FName, int64>> DirNames;
+		TArray<int64> Values;
+		int index = 0;
+
+		for (const FString& String : DirectoriesNames)
+		{
+
+			// create an FName object from the FString
+			DirNames.Add(MakeTuple(FName(*String), static_cast<int64>(index))); // add the FName object to the output array
+			index++;
+		}
+
+		UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("PersonaPreset"), true);
+		Enum->SetEnums(DirNames, UEnum::ECppForm::Regular);
+		presetPaths.Empty();
+		presetPaths = DirectoriesToVisit;
+		bBeingSet = false;
 	}
 
-	TArray<TPair<FName, int64>> DirNames;
-	TArray<int64> Values;
-	int index = 0;
-
-	for (const FString& String : DirectoriesNames)
-	{
-		
-		 // create an FName object from the FString
-		DirNames.Add(MakeTuple(FName(*String), static_cast<int64>(index))); // add the FName object to the output array
-		index++;
-	}
-
-	UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, TEXT("PersonaPreset"), true);
-	Enum->SetEnums(DirNames,UEnum::ECppForm::Regular);
-	presetPaths.Empty();
-	presetPaths = DirectoriesToVisit;
 
 }
 
 
 void UPersonaComponent::ApplyPreset()
 {
-	UE_LOG(LogTemp, Display, TEXT("Preset applied"));
-	if (bHairColor)
-		ApplyHairColor();
-	if (bSkinColor)
-		ApplySkinColor();
-	if (bSkinTexture)
-		ApplySkinTexture();
+	if (!bBeingSet) 
+	{
+		bBeingSet = true;
+		UE_LOG(LogTemp, Display, TEXT("Preset applied"));
+		if (bHairColor)
+			ApplyHairColor();
+		if (bSkinColor)
+			ApplySkinColor();
+		if (bSkinTexture)
+			ApplySkinTexture();
+		bBeingSet = false;
+	}
 }
 
 void UPersonaComponent::SaveMaterialInstance()
@@ -123,9 +137,24 @@ void UPersonaComponent::ApplyHairColor()
 	{
 		if (Component->GetName() == HairName)
 		{
-
 			//UGroomComponent* GroomComponent = Cast<UGroomComponent>(Component);
 			//Cast<UGroomComponent>(Component)
+
+			UMeshComponent* groomComponent = Cast<UMeshComponent>(Component);
+			//UMaterialInterface* currentMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/MyMaterials/MyMaterial"));
+			UMaterialInterface* currentGroomMaterial = groomComponent->GetMaterial(0);
+
+			UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentGroomMaterial, nullptr);
+
+			UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyMaterials/MyNewMaterialInstance"));
+
+			DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
+
+			// Save the new material instance to disk
+			FAssetRegistryModule::AssetCreated(NewMaterialInstance);
+			NewMaterialInstance->MarkPackageDirty();
+
+			groomComponent->SetMaterial(0, NewMaterialInstance);
 		};
 	};
 	UE_LOG(LogTemp, Display, TEXT("Hair applied"));

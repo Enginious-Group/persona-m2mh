@@ -4,14 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "UObject/ScriptDelegates.h"
 #include "PersonaComponent.generated.h"
+
+
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnValueChanged);
 
 UENUM()
 enum class PersonaPreset
 {
 	none
 };
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PERSONA3D_API UPersonaComponent : public UActorComponent
@@ -31,6 +36,31 @@ public:
 		bool bSkinColor;
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		bool bUpdateList;
+	UPROPERTY(BlueprintAssignable, Category = "Persona")
+		FOnValueChanged OnValueChanged;
+	
+
+	virtual void PostInitProperties() override 
+	{
+		Super::PostInitProperties();
+		OnValueChanged.BindDynamic(this, &UPersonaComponent::HandleValueChanged);
+	}
+
+	void HandleValueChanged()
+	{
+		if (bUpdateList) 
+		{
+			bUpdateList = false;
+			UpdateList();
+		}
+		if (bApplyPreset)
+		{
+			bApplyPreset = false;
+			ApplyPreset();
+		}
+	}
+
+
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		bool bApplyPreset;
 	UFUNCTION(CallInEditor, Category = "Persona")
@@ -44,6 +74,8 @@ public:
 private:
 	TArray<FString> presetPaths;
 	TArray<FString> presetNames;
+	bool bBeingSet;
+	bool bBeingUpdated;
 	void SaveMaterialInstance();
 	void ApplySkinColor();
 	void ApplyHairColor();
@@ -51,23 +83,20 @@ private:
 	
 	
 	
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
-	{
-
-		if (bUpdateList)
-		{
-			bUpdateList = false;
-			UpdateList();
-
-		}
-		if (bApplyPreset)
-		{
-			bApplyPreset = false;
-			ApplyPreset();
-		}
-
-		Super::PostEditChangeProperty(PropertyChangedEvent);
-	}
+	//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
+	//{
+	//	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bUpdateList))
+	//	{
+	//		bUpdateList = false;
+	//		UpdateList();
+	//	}
+	//	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset))
+	//	{
+	//		bApplyPreset = false;
+	//		ApplyPreset();
+	//	}
+	//	Super::PostEditChangeProperty(PropertyChangedEvent);
+	//}
 
 
 protected:
