@@ -11,6 +11,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Net/UnrealNetwork.h"
 
 //#include "GroomComponent.h"
 // Sets default values for this component's properties
@@ -19,8 +20,6 @@ UPersonaComponent::UPersonaComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	//UPersonaComponent::UpdateList();
-
 	// ...
 }
 
@@ -40,7 +39,7 @@ void UPersonaComponent::BeginPlay()
 void UPersonaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	// ...
 }
 
@@ -111,15 +110,6 @@ void UPersonaComponent::ApplyPreset()
 			ApplySkinTexture();
 		bBeingSet = false;
 	}
-}
-
-void UPersonaComponent::SaveMaterialInstance()
-{
-	//UMaterialInstanceDynamic* DynamicMaterialInstance;
-	//UMaterialInstance* MaterialInstanceAsset;
-
-	//MaterialInstanceAsset->SetParentInstance(DynamicMaterialInstance);
-
 }
 
 void UPersonaComponent::ApplySkinColor()

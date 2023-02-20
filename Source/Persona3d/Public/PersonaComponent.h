@@ -9,9 +9,6 @@
 
 
 
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnValueChanged);
-
 UENUM()
 enum class PersonaPreset
 {
@@ -36,37 +33,32 @@ public:
 		bool bSkinColor;
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		bool bUpdateList;
-	UPROPERTY(BlueprintAssignable, Category = "Persona")
-		FOnValueChanged OnValueChanged;
-	
-
-	virtual void PostInitProperties() override 
-	{
-		Super::PostInitProperties();
-		//OnValueChanged.BindDynamic(this, &UPersonaComponent::HandleValueChanged);
-	}
-
-	void HandleValueChanged()
-	{
-		if (bUpdateList) 
-		{
-			bUpdateList = false;
-			UpdateList();
-		}
-		if (bApplyPreset)
-		{
-			bApplyPreset = false;
-			ApplyPreset();
-		}
-	}
 
 
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		bool bApplyPreset;
-	UFUNCTION(CallInEditor, Category = "Persona")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
 		void UpdateList();
-	UFUNCTION(CallInEditor, Category = "Persona")
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
 		void ApplyPreset();
+
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
+	{
+		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset))
+		{
+			ApplyPreset();
+			bApplyPreset = false;
+
+		}
+		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bUpdateList))
+		{
+			UpdateList();
+			bUpdateList = false;
+		}
+
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+	}
 
 
 
@@ -76,28 +68,10 @@ private:
 	TArray<FString> presetNames;
 	bool bBeingSet;
 	bool bBeingUpdated;
-	void SaveMaterialInstance();
 	void ApplySkinColor();
 	void ApplyHairColor();
 	void ApplySkinTexture();
 	
-	
-	
-	//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
-	//{
-	//	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bUpdateList))
-	//	{
-	//		bUpdateList = false;
-	//		UpdateList();
-	//	}
-	//	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset))
-	//	{
-	//		bApplyPreset = false;
-	//		ApplyPreset();
-	//	}
-	//	Super::PostEditChangeProperty(PropertyChangedEvent);
-	//}
-
 
 protected:
 	// Called when the game starts
