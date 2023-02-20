@@ -43,7 +43,7 @@ public:
 	virtual void PostInitProperties() override 
 	{
 		Super::PostInitProperties();
-		OnValueChanged.BindDynamic(this, &UPersonaComponent::HandleValueChanged);
+		//OnValueChanged.BindDynamic(this, &UPersonaComponent::HandleValueChanged);
 	}
 
 	void HandleValueChanged()

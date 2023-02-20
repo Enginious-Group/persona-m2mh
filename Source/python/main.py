@@ -24,7 +24,7 @@ def import_texture():
     import_task = unreal.AssetImportTask()
     import_task.automated = True
     import_task.destination_name =''
-    import_task.destination_path = '/Persona3d/Assets/'+ name + '/'
+    import_task.destination_path = '/Game/Persona/'+ name + '/'
     import_task.filename = str(tpathwithpng)
     import_task.replace_existing = True
     import_task.save = True
@@ -33,7 +33,7 @@ def import_texture():
 def import_mesh():
     import_task = unreal.AssetImportTask()   
     import_task.destination_name = ''   
-    import_task.destination_path = '/Persona3d/Assets/' + name + '/'
+    import_task.destination_path = '/Game/Persona/'+ name + '/'
     import_task.filename = str(pathwithobj)
     import_task.replace_existing = True   
     import_task.automated = True
@@ -42,10 +42,7 @@ def import_mesh():
 
 def not_unreal_actions():    
     clientpath = pathlib.Path(args.content + '/Source/python/client.py')
-    #subprocess.check_call([f"\"{pythonExePath}\"",f"\"{clientpath}\"","-assets", f"\"{folderPath}\"","-ip",f"{args.ip}","-path",f"\"{os.path.join(folderPath, namewithpng)}\"","-name",f"\"{name}\""])
     os.system(f"start /wait cmd /c \"\"{pythonExePath}\" \"{clientpath}\" -assets \"{folderPath}\" -ip \"{args.ip}\" -path \"{os.path.join(folderPath, namewithpng)}\" -name \"{name}\"\"")
-    #print(f"start /wait cmd /c \"{pythonExePath}\" \"{clientpath}\" -assets \"{folderPath}\" -ip \"{args.ip}\" -path \"{os.path.join(folderPath, namewithpng)}\" -name \"{name}\"")
-    #"C:\Program Files\Epic Games\UE_5.1\Engine\Binaries\ThirdParty\Python3\Win64\python.exe" "D:\ue\personaproj\Plugins\Persona3d\Source\python\client.py" -assets "D:\ue\personaproj\Plugins\Persona3d\Assets\Persona_1602153556" -ip "52.91.135.204" -path "D:\ue\personaproj\Plugins\Persona3d\Assets\Persona_1602153556\Persona_1602153556.png" -name "Persona_1602153556"
 def create_person_folder():
     if not os.path.exists(folderPath):
         os.makedirs(folderPath)
@@ -86,17 +83,14 @@ if __name__ == '__main__':
 
     namewithpng =  name + '.png'
     folderPath = pathlib.Path(args.content + '/Assets/' + name)
+    #folderPath = os.path.abspath(os.path.join(unreal.Paths.project_dir()))
     pathwithobj = pathlib.Path(str(folderPath) +'/' + name + '.obj')
     tpathwithpng = pathlib.Path(str(folderPath) +'/t_' + name + '.png')
     editorPath = sys.executable
     pythonExePath = pathlib.Path(editorPath[:-23]  + '/ThirdParty/Python3/Win64/python.exe')
-    # pythonExePath = "\"" + str(pythonExePath) + "\""
-
     
-    # print(args.content)
-    # print(args.ip)
-    # print(args.path)
-    # print(name)
+    print(folderPath)
+
     requests_preparation()
     create_person_folder()
     not_unreal_actions()
