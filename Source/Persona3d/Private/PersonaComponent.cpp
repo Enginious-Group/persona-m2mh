@@ -122,18 +122,17 @@ void UPersonaComponent::ApplySkinColor()
 
 void UPersonaComponent::ApplyHairColor()
 {
-	/*
 	FString HairName = "Hair";
-	AActor* stary = Cast<USceneComponent>this->GetOwner();
-	TArray<UActorComponent*> ChildrenComponents;
-	if (stary != nullptr) {
+	USceneComponent* Parent = this->GetAttachParent();
+	TArray<USceneComponent*> ChildrenComponents;
+	if (Parent != nullptr) {
 		
-		stary->GetComponents(ChildrenComponents);
+		Parent->GetChildrenComponents(true ,ChildrenComponents);
 	}
 
 	UE_LOG(LogTemp, Display, TEXT("Actors length: %d"), ChildrenComponents.Num());
 
-	for (AActor* Component : ChildrenComponents)
+	/*for (AActor* Component : ChildrenComponents)
 	{
 
 		UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());

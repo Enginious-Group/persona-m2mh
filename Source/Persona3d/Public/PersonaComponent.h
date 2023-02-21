@@ -14,9 +14,9 @@ enum class PersonaPreset
 {
 	none
 };
-
+//Previously UActorComponent
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PERSONA3D_API UPersonaComponent : public UActorComponent
+class PERSONA3D_API UPersonaComponent : public USceneComponent
 {
 	GENERATED_BODY()
 
