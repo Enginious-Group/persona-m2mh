@@ -142,18 +142,16 @@ void UPersonaComponent::ApplyHairColor()
 			if (Component->GetName() == HairName)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Hair found"));
-				/*UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
+				UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
 				UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
 				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
 				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyNewMaterialInstance"));
 				DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
 				FAssetRegistryModule::AssetCreated(NewMaterialInstance);
 				NewMaterialInstance->MarkPackageDirty();
-				hairComponent->SetMaterial(0, NewMaterialInstance);*/
-
+				hairComponent->SetMaterial(0, NewMaterialInstance);
 			};
 		}
-
 	}
 	UE_LOG(LogTemp, Display, TEXT("Hair applied"));
 
