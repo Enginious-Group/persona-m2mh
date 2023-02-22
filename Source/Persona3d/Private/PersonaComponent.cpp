@@ -11,6 +11,10 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+
+#include "AssetToolsModule.h"
+#include "ObjectTools.h"
+#include "PackageTools.h"
 #include "Net/UnrealNetwork.h"
 #include "PersonaUtilities.h"
 #include "Dom/JsonObject.h"
@@ -145,11 +149,34 @@ void UPersonaComponent::ApplyHairColor()
 				UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
 				UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
 				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
-				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyNewMaterialInstance"));
+
+				FString PackageName = TEXT("/Game/NewPackage");
+				
+				UPackage* MaterialPackage;
+				if (FPackageName::DoesPackageExist(PackageName))
+				{
+					MaterialPackage = LoadPackage(nullptr, *PackageName, LOAD_None);
+				}
+				else
+				{
+					MaterialPackage = CreatePackage(nullptr, *PackageName);
+				}
+
+				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(MaterialPackage, TEXT("MyNewMaterialInstance"));
 				DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
-				FAssetRegistryModule::AssetCreated(NewMaterialInstance);
-				NewMaterialInstance->MarkPackageDirty();
-				hairComponent->SetMaterial(0, NewMaterialInstance);
+
+				MaterialPackage->SetPackageFlags(PKG_ContainsMap | PKG_PlayInEditor);
+				MaterialPackage->SetDirtyFlag(true);
+
+				FString PackageFileName = FPackageName::LongPackageNameToFilename(*PackageName, FPackageName::GetAssetPackageExtension());
+				bool bSuccess = UPackage::SavePackage(MaterialPackage, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
+				if (!bSuccess)
+				{
+					UE_LOG(LogTemp, Error, TEXT("Failed to save package: %s"), *PackageFileName);
+					return;
+				}
+
+				UE_LOG(LogTemp, Log, TEXT("Package saved: %s"), *PackageFileName);
 			};
 		}
 	}
@@ -178,6 +205,4 @@ void UPersonaComponent::ReadJson()
 		//FColor::FromHex(HexString)
 	}
 }
-
-
 

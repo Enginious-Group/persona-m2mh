@@ -73,6 +73,7 @@ private:
 	void ApplyHairColor();
 	void ApplySkinTexture();
 	void ReadJson();
+	void SaveDynamicMatInstance(UMaterialInstanceDynamic* DynamicMaterialInstance, FString AssetName, FString PackagePath);
 	TWeakObjectPtr<AActor> WeakOwner;
 
 
