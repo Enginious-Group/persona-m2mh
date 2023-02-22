@@ -59,7 +59,7 @@ void UPersonaComponent::UpdateList()
 		FString PluginDir = IPluginManager::Get().FindPlugin("Persona3d")->GetBaseDir();
 		FString FullPluginPath = FPaths::ConvertRelativePathToFull(PluginDir) + FString(TEXT("/Assets/"));
 
-		UE_LOG(LogTemp, Display, TEXT("Plugin Path: %s"), *FullPluginPath);
+		//UE_LOG(LogTemp, Display, TEXT("Plugin Path: %s"), *FullPluginPath);
 
 		IFileManager& FileManager = IFileManager::Get();
 		TArray<FString> DirectoriesToVisit;
@@ -75,7 +75,7 @@ void UPersonaComponent::UpdateList()
 
 		for (const FString& Subdirectory : Subdirectories)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Found directory: %s"), *Subdirectory);
+			//UE_LOG(LogTemp, Display, TEXT("Found directory: %s"), *Subdirectory);
 			// Add the subdirectory to the list of directories to visit
 			DirectoriesToVisit.Add(FPaths::Combine(CurrentDirectory, Subdirectory));
 			DirectoriesNames.Add(Subdirectory);
@@ -127,7 +127,7 @@ void UPersonaComponent::ApplySkinColor()
 }
 
 void UPersonaComponent::ApplyHairColor()
-{
+{	
 	FString HairName = "Hair";
 	USceneComponent* Parent = this->GetAttachParent();
 	TArray<USceneComponent*> Parents;
@@ -137,17 +137,18 @@ void UPersonaComponent::ApplyHairColor()
 	if (ParentActor != nullptr) {
 		
 		ChildrenComponents = ParentActor->GetComponents();
-		UE_LOG(LogTemp, Display, TEXT("ParentName: %s"), *(ParentActor->GetName()));
-		UE_LOG(LogTemp, Display, TEXT("ParentName: %d"), ChildrenComponents.Num());
+		//UE_LOG(LogTemp, Display, TEXT("ParentName: %s"), *(ParentActor->GetName()));
+		//UE_LOG(LogTemp, Display, TEXT("ParentName: %d"), ChildrenComponents.Num());
 		for (UActorComponent* Component : ChildrenComponents)
 		{
 
-			UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
+			//UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
 			if (Component->GetName() == HairName)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Hair found"));
 				UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
 				UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
+				UE_LOG(LogTemp, Display, TEXT("Material name: %s"), *(currentHairMaterial->GetName()));
 				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
 
 				FString PackageName = TEXT("/Game/NewPackage");
@@ -161,11 +162,10 @@ void UPersonaComponent::ApplyHairColor()
 				{
 					MaterialPackage = CreatePackage(nullptr, *PackageName);
 				}
-
-				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(MaterialPackage, TEXT("MyNewMaterialInstance"));
-				DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
-
-				MaterialPackage->SetPackageFlags(PKG_ContainsMap | PKG_PlayInEditor);
+				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(MaterialPackage, TEXT("MyNewMaterialInstance"), RF_NoFlags ,currentHairMaterial);
+				DynamicMaterial->K2_CopyMaterialInstanceParameters(NewMaterialInstance);
+				//CopyParameterOverrides
+				//MaterialPackage->SetPackageFlags(PKG_EditorOnly | PKG_PlayInEditor);
 				MaterialPackage->SetDirtyFlag(true);
 
 				FString PackageFileName = FPackageName::LongPackageNameToFilename(*PackageName, FPackageName::GetAssetPackageExtension());
@@ -181,7 +181,6 @@ void UPersonaComponent::ApplyHairColor()
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("Hair applied"));
-
 }
 
 void UPersonaComponent::ApplySkinTexture()
@@ -201,7 +200,7 @@ void UPersonaComponent::ReadJson()
 		FString fieldValue;
 		TSharedPtr<FJsonObject> jsonObject = UPersonaUtilities::ReadJson(fullPath);
 		jsonObject->TryGetStringField("hair_color", fieldValue);
-		UE_LOG(LogTemp, Display, TEXT("Skin color: %s"), *fieldValue);
+		//UE_LOG(LogTemp, Display, TEXT("Skin color: %s"), *fieldValue);
 		//FColor::FromHex(HexString)
 	}
 }
