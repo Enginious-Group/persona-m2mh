@@ -22,8 +22,10 @@ UPersonaComponent::UPersonaComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	WeakOwner = TWeakObjectPtr<AActor>(this->GetTypedOuter<AActor>());
 	// ...
 }
+
 
 
 // Called when the game starts
@@ -124,32 +126,35 @@ void UPersonaComponent::ApplyHairColor()
 {
 	FString HairName = "Hair";
 	USceneComponent* Parent = this->GetAttachParent();
-	TArray<USceneComponent*> ChildrenComponents;
-	if (Parent != nullptr) {
+	TArray<USceneComponent*> Parents;
+	AActor* ParentActor = WeakOwner.Get();
+
+	TSet<UActorComponent*> ChildrenComponents;
+	if (ParentActor != nullptr) {
 		
-		Parent->GetChildrenComponents(true ,ChildrenComponents);
-	}
-
-	UE_LOG(LogTemp, Display, TEXT("Actors length: %d"), ChildrenComponents.Num());
-
-	/*for (AActor* Component : ChildrenComponents)
-	{
-
-		UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
-		if (Component->GetName() == HairName)
+		ChildrenComponents = ParentActor->GetComponents();
+		UE_LOG(LogTemp, Display, TEXT("ParentName: %s"), *(ParentActor->GetName()));
+		UE_LOG(LogTemp, Display, TEXT("ParentName: %d"), ChildrenComponents.Num());
+		for (UActorComponent* Component : ChildrenComponents)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Hair found"));
-			UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
-			UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
-			UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
-			UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyMaterials/MyNewMaterialInstance"));
-			DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
-			FAssetRegistryModule::AssetCreated(NewMaterialInstance);
-			NewMaterialInstance->MarkPackageDirty();
-			hairComponent->SetMaterial(0, NewMaterialInstance);
 
-		};
-	}*/
+			UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
+			if (Component->GetName() == HairName)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Hair found"));
+				/*UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
+				UMaterialInterface* currentHairMaterial = hairComponent->GetMaterial(0);
+				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(currentHairMaterial, nullptr);
+				UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(GetTransientPackage(), TEXT("/Game/MyNewMaterialInstance"));
+				DynamicMaterial->CopyParameterOverrides(NewMaterialInstance);
+				FAssetRegistryModule::AssetCreated(NewMaterialInstance);
+				NewMaterialInstance->MarkPackageDirty();
+				hairComponent->SetMaterial(0, NewMaterialInstance);*/
+
+			};
+		}
+
+	}
 	UE_LOG(LogTemp, Display, TEXT("Hair applied"));
 
 }

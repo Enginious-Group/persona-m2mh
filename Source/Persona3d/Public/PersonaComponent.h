@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "UObject/ScriptDelegates.h"
 #include "PersonaComponent.generated.h"
 
@@ -42,6 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
 		void ApplyPreset();
 
+	
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
 	{
@@ -72,7 +73,7 @@ private:
 	void ApplyHairColor();
 	void ApplySkinTexture();
 	void ReadJson();
-
+	TWeakObjectPtr<AActor> WeakOwner;
 
 
 protected:
