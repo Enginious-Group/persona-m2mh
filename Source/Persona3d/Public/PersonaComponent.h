@@ -10,7 +10,7 @@
 
 
 UENUM()
-enum class PersonaPreset
+enum class PersonaPreset : uint8
 {
 	none
 };
@@ -23,6 +23,7 @@ class PERSONA3D_API UPersonaComponent : public USceneComponent
 public:	
 	// Sets default values for this component's properties
 	UPersonaComponent();
+	~UPersonaComponent();
 	UPROPERTY(EditAnywhere, Category = "Persona")
 		PersonaPreset currentPreset;
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Persona")
@@ -41,32 +42,34 @@ public:
 		void UpdateList();
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
 		void ApplyPreset();
-
 	
+
+	//
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
 	{
-		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset))
-		{
-			ApplyPreset();
-			bApplyPreset = false;
-
-		}
-		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bUpdateList))
-		{
-			UpdateList();
-			bUpdateList = false;
-		}
-
 		Super::PostEditChangeProperty(PropertyChangedEvent);
+		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset) && counterA == 0 && bApplyPreset && this->GetClass()->GetName() == "PersonaComponent")
+		{
+			bApplyPreset = false;
+			ApplyPreset();
+			return;
+		}
+		else if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bUpdateList) && counterU == 0 && bUpdateList && this->GetClass()->GetName() == "PersonaComponent")
+		{
+			bUpdateList = false;
+			UpdateList();
+			return;
+		}
+		return;
 	}
-
-
 
 	//BlueprintCallable,
 private:
-	TArray<FString> presetPaths;
-	TArray<FString> presetNames;
+	TArray<FString>* presetPaths = new TArray<FString>;
+	TArray<FString>* presetNames = new TArray<FString>;
+	int counterU = 0;
+	int counterA = 0;
 	bool bBeingSet;
 	bool bBeingUpdated;
 	void ApplySkinColor();
