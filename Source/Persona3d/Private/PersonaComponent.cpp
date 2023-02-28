@@ -19,6 +19,8 @@
 #include "PersonaUtilities.h"
 #include "Dom/JsonObject.h"
 
+//#include "RenderingCompositionGraph.h"
+//#include "FRenderingCompositePassContext.h"
 
 
 //#include "GroomComponent.h"
@@ -29,6 +31,7 @@ UPersonaComponent::UPersonaComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	WeakOwner = TWeakObjectPtr<AActor>(this->GetTypedOuter<AActor>());
+	UpdateList();
 	// ...
 }
 
@@ -168,7 +171,7 @@ void UPersonaComponent::ApplyHairColor()
 				UE_LOG(LogTemp, Display, TEXT("Skin color: %s"), *fieldValue);
 				
 				UE_LOG(LogTemp, Display, TEXT("Skin color rgb: %s"), *currentColor.ToString());
-				FString PackageName = TEXT("/Game/PeronaMatPackage");
+				FString PackageName = TEXT("/Game/Persona/PersonaMatPackage");
 				
 				UPackage* MaterialPackage;
 				if (FPackageName::DoesPackageExist(PackageName))
@@ -211,6 +214,56 @@ void UPersonaComponent::ApplyHairColor()
 void UPersonaComponent::ApplySkinTexture()
 {
 	UE_LOG(LogTemp, Display, TEXT("Texture applied"));
+
+	FString ComponentName = "Face";
+	USceneComponent* Parent = this->GetAttachParent();
+	TArray<USceneComponent*> Parents;
+	AActor* ParentActor = WeakOwner.Get();
+
+	FString TexturePath = "/Game/Persona/Persona_2002085559/t_Persona_2002085559.t_Persona_2002085559";
+	FStringAssetReference AssetRef(TexturePath);
+	// Load the asset object
+	UObject* AssetObject = AssetRef.TryLoad();
+	// Check that the asset is a texture
+	UTexture* TextureObject = Cast<UTexture>(AssetObject);
+	if (TextureObject) 
+	{
+		UE_LOG(LogTemp, Display, TEXT("Skin texture: %s"), *TextureObject->GetName());
+	}
+
+	TSet<UActorComponent*> ChildrenComponents;
+	if (ParentActor != nullptr) {
+
+		ChildrenComponents = ParentActor->GetComponents();
+		for (UActorComponent* Component : ChildrenComponents)
+		{
+			if (Component->GetName() == ComponentName)
+			{
+				USkeletalMeshComponent* faceComponent = Cast<USkeletalMeshComponent>(Component);
+				if (faceComponent) {
+					UMaterialInterface* baseMaterial = faceComponent->GetMaterial(0)->GetBaseMaterial();
+					UMaterialInterface* mainMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/MetaHumans/Nicole/Face/Materials/Baked/MI_HeadSynthesized_Baked_LOD1.MI_HeadSynthesized_Baked_LOD1", nullptr);
+					TArray<FName> TextureParamNames;
+					UE_LOG(LogTemp, Display, TEXT("Skin texture: %s"), *baseMaterial->GetName());
+
+					UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(mainMat, nullptr);
+					
+					DynamicMaterial->SetTextureParameterValue("color_MAIN", TextureObject);
+					DynamicMaterial->SetTextureParameterValue("color_CM1", TextureObject);
+					DynamicMaterial->SetTextureParameterValue("color_CM2", TextureObject);
+					DynamicMaterial->SetTextureParameterValue("color_CM3", TextureObject);
+					faceComponent->SetMaterial(0, DynamicMaterial);
+					faceComponent->SetMaterial(9, DynamicMaterial);
+					faceComponent->SetMaterial(11, DynamicMaterial);
+					faceComponent->SetMaterial(12, DynamicMaterial);
+					faceComponent->SetMaterial(13, DynamicMaterial);
+					faceComponent->SetMaterial(14, DynamicMaterial);
+					DynamicMaterial->ForceRecompileForRendering();
+				}
+			};
+		}
+	}
+
 }
 
 
