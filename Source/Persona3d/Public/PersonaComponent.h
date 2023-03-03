@@ -32,12 +32,11 @@ public:
 		bool bHairColor;
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Persona")
 		bool bSkinColor;
-	UPROPERTY(EditAnywhere, Category = "Persona")
+	/*UPROPERTY(EditAnywhere, Category = "Persona")
 		bool bUpdateList;
 
-
 	UPROPERTY(EditAnywhere, Category = "Persona")
-		bool bApplyPreset;
+		bool bApplyPreset;*/
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
 		void UpdateList();
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Persona")
@@ -46,7 +45,7 @@ public:
 
 	//
 
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
+	/*virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
 	{
 		Super::PostEditChangeProperty(PropertyChangedEvent);
 		if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UPersonaComponent, bApplyPreset) && counterA == 0 && bApplyPreset && this->GetClass()->GetName() == "PersonaComponent")
@@ -62,7 +61,7 @@ public:
 			return;
 		}
 		return;
-	}
+	}*/
 
 	//BlueprintCallable,
 private:
@@ -76,6 +75,7 @@ private:
 	void ApplyHairColor();
 	void ApplySkinTexture();
 	void ReadJson();
+	UTexture2D* ImportAndSaveTexture(FString Sign);
 	void SaveDynamicMatInstance(UMaterialInstanceDynamic* DynamicMaterialInstance, FString AssetName, FString PackagePath);
 	TWeakObjectPtr<AActor> WeakOwner;
 

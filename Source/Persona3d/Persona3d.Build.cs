@@ -30,6 +30,7 @@ public class Persona3d : ModuleRules
 				"Engine",
 				"Json",
 				"JsonUtilities",
+				"ImageCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -49,6 +50,7 @@ public class Persona3d : ModuleRules
 				"SlateCore",
                 "Json",
                 "JsonUtilities",
+				"ImageCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
