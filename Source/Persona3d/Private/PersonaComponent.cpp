@@ -25,7 +25,10 @@
 #include "Misc/Paths.h"
 #include "CoreTypes.h"
 #include "ImageUtils.h"
-
+#include "Serialization/ArchiveSaveCompressedProxy.h"
+#include "Misc/FileHelper.h"
+#include "IImageWrapperModule.h"
+#include "IImageWrapper.h"
 
 //#include "RenderingCompositionGraph.h"
 //#include "FRenderingCompositePassContext.h"
@@ -150,6 +153,7 @@ void UPersonaComponent::ApplySkinColor()
 
 void UPersonaComponent::ApplyHairColor()
 {	
+
 	FString HairName = "Hair";
 	USceneComponent* Parent = this->GetAttachParent();
 	TArray<USceneComponent*> Parents;
@@ -193,18 +197,12 @@ void UPersonaComponent::ApplyHairColor()
 					MaterialPackage = CreatePackage(nullptr, *PackageName);
 				}
 				static UMaterialInterface* baseMaterial = hairComponent->GetMaterial(0)->GetBaseMaterial();
-				//LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/MetaHumans/Common/Materials/M_hair_v4.M_hair_v4"));
-				//UMaterial* baseMaterialInst = LoadObject<UMaterial>(nullptr, *baseMaterial->GetPathName());
-				//UMaterialInstanceConstant* NewMaterialInstance = NewObject<UMaterialInstanceConstant>(MaterialPackage, TEXT("M_hair"), RF_Public | RF_Standalone | RF_MarkAsRootSet, baseMaterialInst);
 				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(baseMaterial, nullptr);
 				hairComponent->SetMaterial(0, DynamicMaterial);
 				DynamicMaterial->SetVectorParameterValue("hairDye", currentColor);
-				//DynamicMaterial->K2_CopyMaterialInstanceParameters(NewMaterialInstance);
-				//CopyParameterOverrides
-				//MaterialPackage->SetPackageFlag (PKG_EditorOnly | PKG_PlayInEditor);
-				MaterialPackage->SetDirtyFlag(true);
+				//MaterialPackage->SetDirtyFlag(true);
 
-				FString PackageFileName = FPackageName::LongPackageNameToFilename(*PackageName, FPackageName::GetAssetPackageExtension());
+				/*FString PackageFileName = FPackageName::LongPackageNameToFilename(*PackageName, FPackageName::GetAssetPackageExtension());
 				bool bSuccess = UPackage::SavePackage(MaterialPackage, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone | EObjectFlags::RF_MarkAsRootSet, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
 				FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 				AssetRegistryModule.Get().ScanPathsSynchronous({ MaterialPackage->GetPathName() }, true);
@@ -215,6 +213,39 @@ void UPersonaComponent::ApplyHairColor()
 				}
 
 				UE_LOG(LogTemp, Log, TEXT("Package saved: %s"), *PackageFileName);
+				*/
+
+
+				//Target Setup
+				FString folderPath = WeakOwner.Get()->GetClass()->GetClassPathName().ToString();
+				FString className = WeakOwner.Get()->GetClass()->GetName();
+				FString classNamenoc = className.LeftChop(2);
+				FString metahumanName = classNamenoc.RightChop(3);
+				FString classSubstring = TEXT("/") + classNamenoc + TEXT(".") + className;
+				int32 indexToRemove = folderPath.Find(classSubstring);
+				if (indexToRemove != INDEX_NONE) {
+					folderPath = folderPath.Left(indexToRemove) + folderPath.Mid(indexToRemove + classSubstring.Len());
+				}
+				// Game / MetaHumans / Nicole /
+
+				EObjectFlags Flags = RF_Public | RF_Standalone;
+				FString targetPath = folderPath + "/Persona" + "/M_" + metahumanName + "_HAIR";
+				FString targetName = "M_" + metahumanName + "_HAIR";
+
+
+				UPackage* Package = CreatePackage(*targetPath);
+
+				Package->FullyLoad();
+				DynamicMaterial->SetFlags(Flags);
+				DynamicMaterial->Rename(*targetName, Package);
+				DynamicMaterial->AddToRoot();
+				FAssetRegistryModule::AssetCreated(DynamicMaterial);
+				Package->MarkPackageDirty();
+				FAssetRegistryModule::AssetCreated(DynamicMaterial);
+
+				FString PackageFileName = FPackageName::LongPackageNameToFilename(targetPath, FPackageName::GetAssetPackageExtension());
+				bool bSuccess = UPackage::SavePackage(Package, DynamicMaterial, Flags, *PackageFileName);
+
 			};
 		}
 	}
@@ -227,18 +258,9 @@ void UPersonaComponent::ApplySkinTexture()
 	USceneComponent* Parent = this->GetAttachParent();
 	TArray<USceneComponent*> Parents;
 	AActor* ParentActor = WeakOwner.Get();
-	//Albedo Setup
-	/*FString AlbedoPath = "/Persona3d/t_persona.t_persona";
-	
-	FStringAssetReference AlbedoRef(AlbedoPath);
-	UObject* AlbedoObject = AlbedoRef.TryLoad();
-	UTexture* tAlbedoObject = Cast<UTexture>(AlbedoObject);
-	if (tAlbedoObject)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Albedo texture: %s"), *tAlbedoObject->GetName());
-	}
+
 	//Normal Setup
-	FString NormalPath = "/Persona3d/n_persona.n_persona";
+	/*FString NormalPath = "/Persona3d/n_persona.n_persona";
 	FStringAssetReference NormalRef(NormalPath);
 	UObject* NormalObject = NormalRef.TryLoad();
 	UTexture* tNormalObject = Cast<UTexture>(NormalObject);
@@ -264,6 +286,7 @@ void UPersonaComponent::ApplySkinTexture()
 	FStringAssetReference RoughnessRef(RoughnessPath);
 	UObject* RoughnessObject = RoughnessRef.TryLoad();
 	UTexture* tRoughnessObject = Cast<UTexture>(RoughnessObject);
+
 	UTexture2D* nTexture = ImportAndSaveTexture(TEXT("n"));
 	tRoughnessObject->CompositeTexture = nTexture;
 
@@ -287,11 +310,7 @@ void UPersonaComponent::ApplySkinTexture()
 
 					UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(mainMat, nullptr);
 
-					//
 					UTexture2D* tTexture = ImportAndSaveTexture(TEXT("t"));
-					//nTexture = ImportAndSaveTexture(TEXT("n"));
-					//UTexture2D* rTexture = ImportAndSaveTexture(TEXT("r"));
-					//
 
 					DynamicMaterial->SetTextureParameterValue("color_MAIN", tTexture);
 					DynamicMaterial->SetTextureParameterValue("color_CM1", tTexture);
@@ -314,6 +333,35 @@ void UPersonaComponent::ApplySkinTexture()
 					faceComponent->SetMaterial(14, DynamicMaterial);
 
 					DynamicMaterial->ForceRecompileForRendering();
+
+					//Target Setup
+					folderPath = WeakOwner.Get()->GetClass()->GetClassPathName().ToString();
+					className = WeakOwner.Get()->GetClass()->GetName();
+					classNamenoc = className.LeftChop(2);
+					metahumanName = classNamenoc.RightChop(3);
+					classSubstring = TEXT("/") + classNamenoc + TEXT(".") + className;
+					indexToRemove = folderPath.Find(classSubstring);
+					if (indexToRemove != INDEX_NONE) {
+						folderPath = folderPath.Left(indexToRemove) + folderPath.Mid(indexToRemove + classSubstring.Len());
+					}
+					// Game / MetaHumans / Nicole /
+					EObjectFlags Flags = RF_Public | RF_Standalone;
+					FString targetPath = folderPath + "/Persona" + "/M_" + metahumanName + "_FACE";
+					FString targetName = "M_" + metahumanName + "_FACE";
+
+
+					UPackage* Package = CreatePackage(*targetPath);
+
+					Package->FullyLoad();
+					DynamicMaterial->SetFlags(Flags);
+					DynamicMaterial->Rename(*targetName, Package);
+					DynamicMaterial->AddToRoot();
+					FAssetRegistryModule::AssetCreated(DynamicMaterial);
+					Package->MarkPackageDirty();
+					FAssetRegistryModule::AssetCreated(DynamicMaterial);
+
+					FString PackageFileName = FPackageName::LongPackageNameToFilename(targetPath, FPackageName::GetAssetPackageExtension());
+					bool bSuccess = UPackage::SavePackage(Package, DynamicMaterial, Flags, *PackageFileName);
 				}
 			};
 		}
@@ -323,21 +371,6 @@ void UPersonaComponent::ApplySkinTexture()
 }
 
 
-//// JSON
-void UPersonaComponent::ReadJson() 
-{
-	FString name = "/haircolor.json";
-	FString skinColorName = "/color_correction.json";
-	for (const FString& path : *presetPaths)
-	{
-		FString fullPath = path + name;
-		FString fieldValue;
-		TSharedPtr<FJsonObject> jsonObject = UPersonaUtilities::ReadJson(fullPath);
-		jsonObject->TryGetStringField("hair_color", fieldValue);
-		//UE_LOG(LogTemp, Display, TEXT("Skin color: %s"), *fieldValue);
-		//FColor::FromHex(HexString)
-	}
-}
 
 // Sign t, /n_, /r_
 UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
@@ -347,18 +380,6 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	//Source setup
 	FString fullPath = (*presetPaths)[PresetIndex] + Sign + (*presetNames)[PresetIndex] + TEXT(".png");
 	UE_LOG(LogTemp, Display, TEXT("fullAsset Path: %s"), *fullPath);
-
-	UTexture2D* TargetTexture = UTexture2D::CreateTransient(256, 256, PF_B8G8R8A8);
-	TargetTexture = FImageUtils::ImportFileAsTexture2D(*fullPath);
-	// Set the texture's properties
-	TargetTexture->SRGB = true;
-	TargetTexture->CompressionSettings = TC_Default;
-	TargetTexture->Filter = TF_Default;
-	TargetTexture->AddressX = TA_Clamp;
-	TargetTexture->AddressY = TA_Clamp;
-	TargetTexture->UpdateResource();
-	UE_LOG(LogTemp, Display, TEXT("It works: %s"), *TargetTexture->GetName());
-
 
 	//Target Setup
 	FString folderPath = WeakOwner.Get()->GetClass()->GetClassPathName().ToString();
@@ -373,49 +394,60 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	// Game / MetaHumans / Nicole /
 
 	FString targetPath = folderPath + "/Persona" + Sign + metahumanName;
-	FString targetName = Sign.LeftChop(1) + metahumanName;
+	FString targetAbsolute = FPackageName::LongPackageNameToFilename(targetPath, FPackageName::GetAssetPackageExtension());
+
+	FString TextureName = Sign.RightChop(1) + metahumanName;
 	UE_LOG(LogTemp, Display, TEXT("target Path: %s"), *targetPath);
+	
+	EObjectFlags Flags = RF_Public | RF_Standalone | RF_MarkAsRootSet;
 
-
-	/*if (TargetTexture)
+	UTexture2D* TMPTexture = NewObject<UTexture2D>();
+	TArray64<uint8> Buffer;
+	if (FFileHelper::LoadFileToArray(Buffer, *fullPath))
 	{
-		//TargetTexture->Source.Init(TargetTexture->GetSizeX(), TargetTexture->GetSizeY(), 1, 1, ETextureSourceFormat::TSF_BGRA8, DataBuffer.GetData());
+		TMPTexture = FImageUtils::ImportBufferAsTexture2D(Buffer);
+	}
 
-		//Deletion of Package 
-		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-		if (PlatformFile.FileExists(*targetPath))
-		{
-			PlatformFile.DeleteFile(*targetPath);
-		}
+	const uint8* FormatedImageData = static_cast<const uint8*>(TMPTexture->PlatformData->Mips[0].BulkData.LockReadOnly());
+	int TextureWidth = TMPTexture->PlatformData->SizeX;
+	int TextureHeight = TMPTexture->PlatformData->SizeY;
+	
 
-
-		FString PackageName = targetPath;
-		UPackage* Package = CreatePackage(*PackageName);
-		Package->FullyLoad();
-		TargetTexture->Rename(*PackageName);
-		TargetTexture->AddToRoot();
-		FAssetRegistryModule::AssetCreated(TargetTexture);
-		Package->MarkPackageDirty();
-		FAssetRegistryModule::AssetCreated(TargetTexture);
-		FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
-		UE_LOG(LogTemp, Log, TEXT("Package filename: %s"), *PackageFileName);
-		//bool bSuccess = UPackage::SavePackage(Package, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone | EObjectFlags::RF_MarkAsRootSet, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
-		bool bSuccess = UPackage::SavePackage(Package, nullptr, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *PackageFileName, GError, nullptr, true, true, SAVE_NoError);
-
-		FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-		AssetRegistryModule.Get().ScanPathsSynchronous({ Package->GetPathName() }, true);
-		if (!bSuccess)
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to save package: %s"), *PackageName);
-			return TargetTexture;
-		}
-		UE_LOG(LogTemp, Log, TEXT("Package saved: %s"), *PackageName);
-		return TargetTexture;
+	/*if (FPaths::FileExists(targetPath))
+	{
+		IFileManager::Get().Delete(*targetPath, true, true, true);
 	}*/
+
+
+
+	UPackage* Package = CreatePackage(NULL, *targetPath);
+	Package->FullyLoad();
+	UTexture2D* TargetTexture = NewObject<UTexture2D>(Package, *TextureName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
+
+	TargetTexture->AddToRoot();			
+	TargetTexture->PlatformData = new FTexturePlatformData();
+	TargetTexture->PlatformData->SizeX = TextureWidth;
+	TargetTexture->PlatformData->SizeY = TextureHeight;
+	TargetTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
+
+	FTexture2DMipMap* Mip = new(TargetTexture->PlatformData->Mips) FTexture2DMipMap();
+	Mip->SizeX = TextureWidth;
+	Mip->SizeY = TextureHeight;
+
+	Mip->BulkData.Lock(LOCK_READ_WRITE);
+	uint8* TextureData = (uint8*)Mip->BulkData.Realloc(TextureWidth * TextureHeight * 4);
+	FMemory::Memcpy(TextureData, FormatedImageData, sizeof(uint8) * TextureHeight * TextureWidth * 4);
+	Mip->BulkData.Unlock();
+	TargetTexture->Source.Init(TextureWidth, TextureHeight, 1, 1, ETextureSourceFormat::TSF_BGRA8, FormatedImageData);
+	TargetTexture->UpdateResource();
+	Package->MarkPackageDirty();
+	FAssetRegistryModule::AssetCreated(TargetTexture);
+
+	//FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+	bool bSaved = UPackage::SavePackage(Package, TargetTexture, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *targetAbsolute, GError, nullptr, true, true, SAVE_NoError);
+
 	return TargetTexture;
 }
-
-
 // Texture utils
 
 

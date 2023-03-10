@@ -31,6 +31,8 @@ public class Persona3d : ModuleRules
 				"Json",
 				"JsonUtilities",
 				"ImageCore",
+				"InputCore",
+				"UnrealEd"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -51,6 +53,7 @@ public class Persona3d : ModuleRules
                 "Json",
                 "JsonUtilities",
 				"ImageCore",
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
