@@ -77,6 +77,7 @@ private:
 	void ReadJson();
 	UTexture2D* ImportAndSaveTexture(FString Sign);
 	void SaveDynamicMatInstance(UMaterialInstanceDynamic* DynamicMaterialInstance, FString AssetName, FString PackagePath);
+	void DeletePackage(const FString& PackageName);
 	TWeakObjectPtr<AActor> WeakOwner;
 
 
