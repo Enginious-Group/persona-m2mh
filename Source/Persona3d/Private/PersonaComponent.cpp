@@ -172,9 +172,10 @@ void UPersonaComponent::ApplyHairColor()
 			//UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
 			if (Component->GetName() == HairName)
 			{
+
 				//UE_LOG(LogTemp, Display, TEXT("Hair found"));
 				UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
-				
+				hairComponent->SetActive(false);
 				FString name = "/haircolor.json";
 				FString skinColorName = "/color_correction.json";
 				int32 PresetIndex = static_cast<int32>(currentPreset);
@@ -212,28 +213,23 @@ void UPersonaComponent::ApplyHairColor()
 				Package->FullyLoad();
 
 				UMaterialInstanceDynamic* TemplateInstance = UMaterialInstanceDynamic::Create(baseMaterial, nullptr);
-				UMaterialInstanceDynamic* DynamicMaterial = NewObject<UMaterialInstanceDynamic>(Package, *targetName, RF_Public | RF_Standalone | RF_MarkAsRootSet, TemplateInstance);
-
-
-
-				//UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(baseMaterial, nullptr);
-				hairComponent->SetMaterial(0, DynamicMaterial);
-				DynamicMaterial->SetVectorParameterValue("hairDye", currentColor);
-				DynamicMaterial->ForceRecompileForRendering();
-
-
-				//UPackage* Package = CreatePackage(*targetPath);
+				hairComponent->SetMaterial(0, nullptr);
+				UMaterialInstanceDynamic* InstancedMaterial = NewObject<UMaterialInstanceDynamic>(Package, *targetName, RF_Public | RF_Standalone | RF_MarkAsRootSet, TemplateInstance);
+				InstancedMaterial->SetVectorParameterValue("hairDye", currentColor);
+				InstancedMaterial->ForceRecompileForRendering();
 
 				Package->FullyLoad();
-				DynamicMaterial->SetFlags(Flags);
+				InstancedMaterial->SetFlags(Flags);
 				//DynamicMaterial->Rename(*targetName, Package);
-				DynamicMaterial->AddToRoot();
-				FAssetRegistryModule::AssetCreated(DynamicMaterial);
+				InstancedMaterial->AddToRoot();
+				FAssetRegistryModule::AssetCreated(InstancedMaterial);
 				Package->MarkPackageDirty();
-				FAssetRegistryModule::AssetCreated(DynamicMaterial);
+				FAssetRegistryModule::AssetCreated(InstancedMaterial);
 
 				FString PackageFileName = FPackageName::LongPackageNameToFilename(targetPath, FPackageName::GetAssetPackageExtension());
-				bool bSuccess = UPackage::SavePackage(Package, DynamicMaterial, Flags, *PackageFileName);
+				bool bSuccess = UPackage::SavePackage(Package, InstancedMaterial, Flags, *PackageFileName);
+				hairComponent->SetMaterial(0, InstancedMaterial);
+				hairComponent->SetActive(true);
 
 			};
 		}
@@ -358,6 +354,10 @@ void UPersonaComponent::ApplySkinTexture()
 // Sign t, /n_, /r_
 UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 {
+	bool rgb = false;
+	if (Sign == TEXT("n")) {
+		rgb = true;
+	}
 	Sign = TEXT("/") + Sign + TEXT("_");
 	int32 PresetIndex = static_cast<int32>(currentPreset);
 	//Source setup
@@ -411,6 +411,7 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	TargetTexture->PlatformData = new FTexturePlatformData();
 	TargetTexture->PlatformData->SizeX = TextureWidth;
 	TargetTexture->PlatformData->SizeY = TextureHeight;
+	
 	TargetTexture->PlatformData->PixelFormat = EPixelFormat::PF_B8G8R8A8;
 
 	FTexture2DMipMap* Mip = new(TargetTexture->PlatformData->Mips) FTexture2DMipMap();
@@ -423,7 +424,14 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	FMemory::Memcpy(TextureData, FormatedImageData, sizeof(uint8) * TextureHeight * TextureWidth * 4);
 	//Mip->BulkData.Unlock();
 	TargetTexture->Source.Init(TextureWidth, TextureHeight, 1, 1, ETextureSourceFormat::TSF_BGRA8, FormatedImageData);
-	
+	if (rgb)
+	{
+		TargetTexture->SRGB = false;
+	}
+	else
+	{
+		TargetTexture->SRGB = true;
+	}
 	TargetTexture->UpdateResource();
 	//Mip->BulkData.Unlock();
 	Package->MarkPackageDirty();
