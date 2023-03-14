@@ -394,7 +394,7 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	const uint8* FormatedImageData = static_cast<const uint8*>(TMPTexture->PlatformData->Mips[0].BulkData.LockReadOnly());
 	int TextureWidth = TMPTexture->PlatformData->SizeX;
 	int TextureHeight = TMPTexture->PlatformData->SizeY;
-	
+	TMPTexture->PlatformData->Mips[0].BulkData.Unlock();
 
 	/*if (FPaths::FileExists(targetPath))
 	{
