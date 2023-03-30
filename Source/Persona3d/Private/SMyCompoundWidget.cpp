@@ -4,7 +4,11 @@
 #include "SMyCompoundWidget.h"
 #include "SlateOptMacros.h"
 
+
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
+
+
 void SMyCompoundWidget::Construct(const FArguments& InArgs)
 {
     ChildSlot
@@ -79,14 +83,24 @@ void SMyCompoundWidget::Construct(const FArguments& InArgs)
         .HAlign(HAlign_Center)
         [
             SNew(SButton)
-            .Text(FText::FromString("Persona Full"))
+            .Text(FText::FromString("Personificate"))
         .OnClicked(FOnClicked::CreateSP(this, &SMyCompoundWidget::OnPersonaButtonClicked))
+        ]
+    + SHorizontalBox::Slot()
+        .VAlign(VAlign_Top)
+        .HAlign(HAlign_Center)
+        [
+            SNew(SButton)
+            .Text(FText::FromString("Import"))
+        .OnClicked(FOnClicked::CreateSP(this, &SMyCompoundWidget::OnImportButtonClicked))
         ]
         ]
         ];
 }
 ;
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
+
 
 FReply SMyCompoundWidget::OnPersonaButtonClicked()
 {
@@ -97,12 +111,32 @@ FReply SMyCompoundWidget::OnPersonaButtonClicked()
     FString ipString = ipTextBox->GetText().ToString();
     FString nameString = nameTextBox->GetText().ToString();
 
-    FString commandPath = (FString(TEXT("py ")) + PluginDir + FString(TEXT("/Source/python/main.py -content \"")) + FullPluginPath + FString(TEXT("\" -ip ")) + ipString + FString(TEXT(" -path \"")) + pathString + FString(TEXT("\" -name \"")) + nameString + FString(TEXT("\"")));
-   
-    const TCHAR* commandTchar = *commandPath;
-    GEngine->Exec(NULL, commandTchar);
+    FString PythonScript = FullPluginPath + FString(TEXT("/Source/python/main.py"));
+    FString Parameters = FString(TEXT("-content \"")) + FullPluginPath + FString(TEXT("\" -ip ")) + ipString + FString(TEXT(" -path \"")) + pathString + FString(TEXT("\" -name \"")) + nameString + FString(TEXT("\""));
+    FString FullCommand = FString::Printf(TEXT("py \"%s\" %s"), *PythonScript, *Parameters);
+    FString editorPath = FPaths::ConvertRelativePathToFull(FPlatformProcess::BaseDir());
+    FString pythonExec = FString(TEXT("/Engine/Binaries/ThirdParty/Python3/Win64/python.exe"));
+    pythonExec = editorPath.LeftChop(23) + pythonExec;
+ 
+
+
+    FGuid UniqueId = FGuid::NewGuid();
+    FString UniqueIdString = UniqueId.ToString(EGuidFormats::DigitsWithHyphensInBraces);
+    FString ShortUniqueIdString = UniqueIdString.RightChop(2).Left(6);
+
+    PersonName = nameString + TEXT("_") + ShortUniqueIdString;
+    
+
+    FString params = FullPluginPath + FString(TEXT("/Source/python/main_nonue.py -content \"")) + FullPluginPath + FString(TEXT("\" -ip ")) + ipString + FString(TEXT(" -path \"")) + pathString + FString(TEXT("\" -name \"")) + PersonName + FString(TEXT("\" -ppath \"")) + pythonExec + FString(TEXT("\""));
+    FString clientCommandPath = pythonExec + FString(TEXT(" ")) + FullPluginPath + FString(TEXT("/Source/python/main_nonue.py -content \"")) + FullPluginPath + FString(TEXT("\" -ip ")) + ipString + FString(TEXT(" -path \"")) + pathString + FString(TEXT("\" -name \"")) + PersonName + FString(TEXT("\" -ppath \"")) + pythonExec + FString(TEXT("\""));
+    clientCommandPath = clientCommandPath.Replace(TEXT("/"), TEXT("\\"));
+    UE_LOG(LogTemp, Display, TEXT("Command reformated: %s"), *clientCommandPath);
+    FProcHandle ProcessHandle = FPlatformProcess::CreateProc(*pythonExec, *params, true, true, false, nullptr, 0, nullptr, nullptr);
     return FReply::Handled();
 }
+
+
+
 
 FReply SMyCompoundWidget::OnPathButtonClicked()
 {
@@ -114,6 +148,21 @@ FReply SMyCompoundWidget::OnPathButtonClicked()
     return FReply::Handled();
 }
 
+FReply SMyCompoundWidget::OnImportButtonClicked()
+{
+
+    UE_LOG(LogTemp, Display, TEXT("Improt"));
+    FString PluginDir = IPluginManager::Get().FindPlugin("Persona3d")->GetBaseDir();
+    FString FullPluginPath = FPaths::ConvertRelativePathToFull(PluginDir);
+    FString commandPath = (FString(TEXT("py ")) + PluginDir + FString(TEXT("/Source/python/main_ue.py -content \"")) + FullPluginPath + FString(TEXT("\" -name \"")) + PersonName + FString(TEXT("\"")));
+
+    const TCHAR* commandTchar = *commandPath;
+    GEngine->Exec(NULL, commandTchar);  
+    return FReply::Handled();
+}
+
+
+
 void SMyCompoundWidget::PersonaOpenFileDialog(const FString& DialogTitle, const FString& DefaultPath, const FString& FileTypes, TArray<FString>& OutFileNames) {
     void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
     IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
@@ -123,6 +172,3 @@ void SMyCompoundWidget::PersonaOpenFileDialog(const FString& DialogTitle, const 
         DesktopPlatform->OpenFileDialog(ParentWindowPtr, DialogTitle, DefaultPath, FString(""), FileTypes, SelectionFlag, OutFileNames);
     }
 }
-
-
-

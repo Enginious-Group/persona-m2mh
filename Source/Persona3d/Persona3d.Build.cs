@@ -32,7 +32,9 @@ public class Persona3d : ModuleRules
 				"JsonUtilities",
 				"ImageCore",
 				"InputCore",
-				"UnrealEd"
+				"UnrealEd",
+                "EditorScriptingUtilities",
+                "AssetTools",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

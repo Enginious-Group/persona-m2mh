@@ -81,24 +81,16 @@ void UPersonaComponent::UpdateList()
 		FString PluginDir = IPluginManager::Get().FindPlugin("Persona3d")->GetBaseDir();
 		FString FullPluginPath = FPaths::ConvertRelativePathToFull(PluginDir) + FString(TEXT("/Assets/"));
 
-		//UE_LOG(LogTemp, Display, TEXT("Plugin Path: %s"), *FullPluginPath);
-
 		IFileManager& FileManager = IFileManager::Get();
 		TArray<FString> DirectoriesNames;
-
-		//DirectoriesToVisit.Add(FullPluginPath);
 
 		const FString& CurrentDirectory = FullPluginPath;
 		TArray<FString> Subdirectories;
 
-		// Get all subdirectories of the current directory
 		FileManager.FindFiles(Subdirectories, *(CurrentDirectory + "*"), false, true);
 		presetPaths->Reset();
 		for (const FString& Subdirectory : Subdirectories)
 		{
-			//UE_LOG(LogTemp, Display, TEXT("Found directory: %s"), *Subdirectory);
-			// Add the subdirectory to the list of directories to visit
-			
 			presetPaths->Add(FPaths::Combine(CurrentDirectory, Subdirectory));
 			DirectoriesNames.Add(Subdirectory);
 		}
@@ -116,9 +108,7 @@ void UPersonaComponent::UpdateList()
 
 		for (const FString& String : DirectoriesNames)
 		{
-
-			// create an FName object from the FString
-			DirNames.Add(MakeTuple(FName(*String), static_cast<int64>(index))); // add the FName object to the output array
+			DirNames.Add(MakeTuple(FName(*String), static_cast<int64>(index)));
 			index++;
 		}
 
@@ -164,16 +154,10 @@ void UPersonaComponent::ApplyHairColor()
 	if (ParentActor != nullptr) {
 		
 		ChildrenComponents = ParentActor->GetComponents();
-		//UE_LOG(LogTemp, Display, TEXT("ParentName: %s"), *(ParentActor->GetName()));
-		//UE_LOG(LogTemp, Display, TEXT("ParentName: %d"), ChildrenComponents.Num());
 		for (UActorComponent* Component : ChildrenComponents)
 		{
-
-			//UE_LOG(LogTemp, Display, TEXT("Component name: %s"), *Component->GetName());
 			if (Component->GetName() == HairName)
 			{
-
-				//UE_LOG(LogTemp, Display, TEXT("Hair found"));
 				UMeshComponent* hairComponent = Cast<UMeshComponent>(Component);
 				hairComponent->SetActive(false);
 				FString name = "/haircolor.json";
@@ -203,12 +187,9 @@ void UPersonaComponent::ApplyHairColor()
 					folderPath = folderPath.Left(indexToRemove) + folderPath.Mid(indexToRemove + classSubstring.Len());
 				}
 				// Game / MetaHumans / Nicole /
-
 				EObjectFlags Flags = RF_Public | RF_Standalone;
 				FString targetPath = folderPath + "/Persona" + "/M_" + metahumanName + "_HAIR";
 				FString targetName = "M_" + metahumanName + "_HAIR";
-
-
 				UPackage* Package = CreatePackage(*targetPath);
 				Package->FullyLoad();
 
@@ -260,9 +241,11 @@ void UPersonaComponent::ApplySkinTexture()
 	UTexture* tRoughnessObject = Cast<UTexture>(RoughnessObject);
 
 	UTexture2D* nTexture = ImportAndSaveTexture(TEXT("n"));
-	tRoughnessObject->CompositeTexture = nTexture;
-
-
+	if (tRoughnessObject) 
+	{
+		tRoughnessObject->CompositeTexture = nTexture;
+	}
+	
 
 	TSet<UActorComponent*> ChildrenComponents;
 	if (ParentActor != nullptr) {
@@ -310,9 +293,7 @@ void UPersonaComponent::ApplySkinTexture()
 					DynamicMaterial->SetTextureParameterValue("color_CM1", tTexture);
 					DynamicMaterial->SetTextureParameterValue("color_CM2", tTexture);
 					DynamicMaterial->SetTextureParameterValue("color_CM3", tTexture);
-
 					DynamicMaterial->SetTextureParameterValue("roughness_MAIN", tRoughnessObject);
-
 					DynamicMaterial->SetTextureParameterValue("normal_MAIN", nTexture);
 					DynamicMaterial->SetTextureParameterValue("normal_WM1", nTexture);
 					DynamicMaterial->SetTextureParameterValue("normal_WM2", nTexture);
@@ -327,11 +308,6 @@ void UPersonaComponent::ApplySkinTexture()
 					faceComponent->SetMaterial(14, DynamicMaterial);
 
 					DynamicMaterial->ForceRecompileForRendering();
-
-
-
-
-					
 					DynamicMaterial->SetFlags(Flags);
 					//DynamicMaterial->Rename(*targetName, Package);
 					DynamicMaterial->AddToRoot();
@@ -374,7 +350,6 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	if (indexToRemove != INDEX_NONE) {
 		folderPath = folderPath.Left(indexToRemove) + folderPath.Mid(indexToRemove + classSubstring.Len());
 	}
-	// Game / MetaHumans / Nicole /
 
 	FString targetPath = folderPath + "/Persona" + Sign + metahumanName;
 	FString targetAbsolute = FPackageName::LongPackageNameToFilename(targetPath, FPackageName::GetAssetPackageExtension());
@@ -395,14 +370,6 @@ UTexture2D* UPersonaComponent::ImportAndSaveTexture(FString Sign)
 	int TextureWidth = TMPTexture->PlatformData->SizeX;
 	int TextureHeight = TMPTexture->PlatformData->SizeY;
 	TMPTexture->PlatformData->Mips[0].BulkData.Unlock();
-
-	/*if (FPaths::FileExists(targetPath))
-	{
-		IFileManager::Get().Delete(*targetPath, true, true, true);
-	}*/
-
-
-
 	UPackage* Package = CreatePackage(NULL, *targetPath);
 	Package->FullyLoad();
 	UTexture2D* TargetTexture = NewObject<UTexture2D>(Package, *TextureName, RF_Public | RF_Standalone | RF_MarkAsRootSet);
